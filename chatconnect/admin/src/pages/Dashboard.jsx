@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
+import Layout from '../components/Layout.jsx'
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null)
@@ -11,23 +12,40 @@ export default function Dashboard() {
       .catch(() => {})
   }, [])
 
-  if (!stats) return <div className="p-6">Loading...</div>
-
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-semibold">Dashboard</h1>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="p-4 bg-gray-100 rounded">Total Users: {stats.totalUsers}</div>
-        <div className="p-4 bg-gray-100 rounded">Active Users: {stats.activeUsers}</div>
-      </div>
-      <div>
-        <h2 className="text-xl font-medium mb-2">Messages (last 7 days)</h2>
-        <ul className="list-disc pl-6">
-          {stats.messagesLast7.map((d) => (
-            <li key={d._id}>{d._id}: {d.count}</li>
-          ))}
-        </ul>
-      </div>
-    </div>
+    <Layout>
+      {!stats ? (
+        <div className="p-6">Loading...</div>
+      ) : (
+        <div className="space-y-6">
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div className="p-6 rounded-2xl bg-white shadow border">
+              <div className="text-sm text-gray-500">Total Users</div>
+              <div className="text-3xl font-bold">{stats.totalUsers}</div>
+            </div>
+            <div className="p-6 rounded-2xl bg-white shadow border">
+              <div className="text-sm text-gray-500">Active Users</div>
+              <div className="text-3xl font-bold">{stats.activeUsers}</div>
+            </div>
+            <div className="p-6 rounded-2xl bg-white shadow border">
+              <div className="text-sm text-gray-500">Messages (7d)</div>
+              <div className="text-3xl font-bold">{stats.messagesLast7.reduce((a,b)=>a+b.count,0)}</div>
+            </div>
+          </div>
+          <div className="p-6 rounded-2xl bg-white shadow border">
+            <h2 className="text-xl font-semibold mb-2">Messages last 7 days</h2>
+            <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+              {stats.messagesLast7.map((d) => (
+                <li key={d._id} className="p-3 rounded-lg bg-gray-50 border text-sm flex items-center justify-between">
+                  <span>{d._id}</span>
+                  <span className="font-semibold">{d.count}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+    </Layout>
   )
 }

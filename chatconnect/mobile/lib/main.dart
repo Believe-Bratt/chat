@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'src/auth/auth_gate.dart';
 import 'src/state/session.dart';
+import 'src/ui/theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,8 +20,8 @@ class ChatConnectApp extends StatelessWidget {
       create: (_) => SessionState(),
       child: MaterialApp(
         title: 'ChatConnect',
-        theme: ThemeData.light(),
-        darkTheme: ThemeData.dark(),
+        theme: buildLightTheme(),
+        darkTheme: buildDarkTheme(),
         home: const AuthGate(),
       ),
     );
