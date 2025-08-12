@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import { Server as SocketIOServer } from 'socket.io';
 import { initFirebaseAdmin, getFirebaseAdmin } from './setup/firebase.js';
+import { initMemoryMongoIfNeeded } from './setup/memory-mongo.js';
 import { authRouter } from './views/auth.js';
 import { usersRouter } from './views/users.js';
 import { groupsRouter } from './views/groups.js';
@@ -49,6 +50,7 @@ app.get('/health', (req, res) => res.json({ ok: true }));
 
 // Setup Firebase and MongoDB
 await initFirebaseAdmin();
+await initMemoryMongoIfNeeded();
 const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/chatconnect';
 await mongoose.connect(mongoUri);
 
@@ -64,8 +66,15 @@ app.use('/admin', adminRouter);
 // Socket auth middleware
 io.use(async (socket, next) => {
   try {
+    const devBypass = process.env.DEV_ALLOW_INSECURE_AUTH === 'true';
     const idToken = socket.handshake.auth?.idToken;
-    if (!idToken) return next(new Error('unauthorized'));
+    if (!idToken) {
+      if (devBypass) {
+        socket.data.uid = socket.handshake.auth?.uid || 'dev-user';
+        return next();
+      }
+      return next(new Error('unauthorized'));
+    }
     const admin = getFirebaseAdmin();
     const decoded = await admin.auth().verifyIdToken(idToken);
     socket.data.uid = decoded.uid;
